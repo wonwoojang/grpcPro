@@ -1,11 +1,12 @@
 package com.jww.grpcpro
 
+import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.jww.grpcpro.databinding.FragmentFirstBinding
 
 /**
@@ -19,6 +20,8 @@ class FirstFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+        private val uri by lazy { Uri.parse("http://10.0.2.2:50051/") }
+    private val greeterService by lazy { GRPCTestClass(uri) }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -33,12 +36,18 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.buttonFirst.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+
+            lifecycleScope.launchWhenResumed {
+                val response = greeterService.sayHello("test")
+                print(response)
+            }
+//            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        greeterService.close()
         _binding = null
     }
 }
